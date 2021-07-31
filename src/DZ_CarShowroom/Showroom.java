@@ -4,30 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Showroom {
-    List<Car> cars = new ArrayList<>(1);
-    Customer customer = new Customer(this);
-    int iMax = 10;
+    private static final long TIME_FOR_BUY_CAR = 1000L;
+    private final List<Car> cars = new ArrayList<>(1);
 
-    public List<Car> cars() {
-        return cars;
+    public synchronized void receiveCar(Car car) {
+        System.out.println("Принимаю машину");
+        cars.add(car);
+        notify();
+        System.out.println("Машина принята");
     }
 
-    public void sellCar() {
-        System.out.printf("%s начал продажу автомобилей!\n\n", Thread.currentThread().getName());
+    public synchronized void sellCar() {
+        System.out.printf("%s зашел в магазин\n\n", Thread.currentThread().getName());
         try {
-            while (iMax != 0) {
-                Thread.sleep(3000);
-                System.out.printf("%s подготовил автомобиль к продаже\n", Thread.currentThread().getName());
-                cars.add(new Car());
-                customer.receiveCar();
-                iMax--;
+            System.out.printf("%s запросил автомобиль\n", Thread.currentThread().getName());
+            while (cars.size() == 0) {
+                System.out.println("Машин нет в наличии");
+                wait();
             }
+            Thread.sleep(TIME_FOR_BUY_CAR);
+            System.out.println(Thread.currentThread().getName() + " купил автомобиль");
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public Car buyCar() {
-        return customer.buyCar();
+        cars.remove(cars.size() - 1);
     }
 }
